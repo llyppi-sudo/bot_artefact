@@ -1,6 +1,5 @@
 import inspect
 import os
-import requests
 import base64
 import magic
 import platform
@@ -93,65 +92,3 @@ def gemini(prompt:str,system:str=None,files:list[str]=None,model:str=GEMINI_MODE
     except Exception as e:        
         print(f"Error {e}")
         return None
-
-async def gemini_speech_to_text(self, audio: bytes) -> str:
-    """Queries Gemini for text and then converts it to speech using Google Cloud TTS"""
-    try:
-        method = inspect.stack()[0].function
-        print(method)
-
-        url = f"https://speech.googleapis.com/v1/speech:recognize?key={GOOGLE_API_KEY}";    
-        # Detect audio format from bytes
-        mime = magic.from_buffer(audio, mime=True) if audio else "audio/wav"
-        if not mime or "audio" not in mime:
-            mime = "audio/wav"  # fallback
-
-        # Extract encoding from MIME type
-        encoding_map = {
-            "audio/mpeg": "MP3",
-            "audio/ogg": "OGG_OPUS",
-            "audio/wav": "LINEAR16",
-            "audio/flac": "FLAC",
-            "audio/x-m4a": "MP4",
-        }
-        encoding = encoding_map.get(mime, "LINEAR16")
-        # audio_wav = convert_wav(audio) 
-        # with open("wave_audio.wav", "wb",encoding="utf-8") as f:
-        #     f.write(audio_wav)
-        b64 = base64.b64encode(audio).decode('utf-8')            
-        # print(b64)
-        
-        payload = {
-            "config": {
-                "languageCode": "pt-BR",
-                "encoding": encoding,
-                "sampleRateHertz": 48000,
-                "model": "phone_call",
-                "useEnhanced": True,
-                "metadata": {
-                    "interactionType": "VOICEMAIL",
-                    "microphoneDistance": "NEARFIELD",
-                    "originalMediaType": "AUDIO",
-                    "recordingDeviceType": "SMARTPHONE",
-                    "originalMimeType": mime
-                }
-            },
-            "audio": {"content": b64}
-        }
-        # async with httpx.AsyncClient() as client:
-        #     response = await client.post(url, json=payload, timeout=30.0)
-        response = requests.post(url, json=payload, timeout=30.0)
-        
-        if response.status_code != 200:
-            print(f"Google TTS API Error {response.status_code}: {response.text}")
-            return None            
-
-        response_json = response.json()
-        if "results" in response_json and len(response_json["results"]) > 0:
-            return response_json["results"][0]["alternatives"][0]["transcript"]
-        return None
-
-    except Exception as e:
-        print(f"Error {e}")
-        return None
-

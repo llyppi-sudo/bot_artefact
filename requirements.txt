@@ -1,0 +1,11 @@
+httpx
+requests
+aiosqlite
+langgraph-checkpoint-sqlite
+python-telegram-bot
+telethon
+python-dotenv
+aiogram
+aiohttp
+google-genai
+python-magic
